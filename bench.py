@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import re
 import subprocess
@@ -60,7 +60,7 @@ def bench(algorithm, nthreads, seed, outfile, options):
 
     outstr = '%s, %d, %s' % (algorithm, nthreads, output.strip())
 
-    print outstr
+    print(outstr)
     f.write(outstr + '\n')
 
 if __name__ == '__main__':
@@ -94,5 +94,5 @@ if __name__ == '__main__':
     with open(options.outfile, 'a') as f:
         for a in algorithms:
             for n in nthreads:
-                for r in xrange(options.reps):
+                for r in range(options.reps):
                     bench(a, n, r, f, options)

@@ -21,6 +21,7 @@
 #define __SPRAYLIST_H
 
 #include <iostream>
+#include <cstdint>
 
 struct sl_intset;
 typedef sl_intset sl_intset_t;

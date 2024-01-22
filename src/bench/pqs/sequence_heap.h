@@ -21,6 +21,7 @@
 #define __SEQUENCE_HEAP_H
 
 #include <cstddef>
+#include <cstdint>
 
 template <class K, class V>
 class KNHeap;
