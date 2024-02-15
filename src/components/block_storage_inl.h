@@ -18,55 +18,48 @@
  */
 
 template <class K, class V, int N>
-block_storage<K, V, N>::~block_storage()
-{
-    for (size_t i = 0; i < m_size; i++) {
-        for (int j = 0; j < N; j++) {
-            delete m_blocks[i].xs[j];
-        }
+block_storage<K, V, N>::~block_storage() {
+  for (size_t i = 0; i < m_size; i++) {
+    for (int j = 0; j < N; j++) {
+      delete m_blocks[i].xs[j];
     }
+  }
 }
 
 template <class K, class V, int N>
-block<K, V> *
-block_storage<K, V, N>::get_block(const size_t i)
-{
-    for (; m_size <= i; m_size++) {
-        /* Alloc new blocks. */
-        for (int j = 0; j < N; j++) {
-            m_blocks[m_size].xs[j] = new block<K, V>(m_size);
-        }
+block<K, V> *block_storage<K, V, N>::get_block(const size_t i) {
+  for (; m_size <= i; m_size++) {
+    /* Alloc new blocks. */
+    for (int j = 0; j < N; j++) {
+      m_blocks[m_size].xs[j] = new block<K, V>(m_size);
     }
+  }
 
-    block<K, V> *block = m_blocks[i].xs[N - 1];
-    for (int j = 0; j < N - 1; j++) {
-        if (!m_blocks[i].xs[j]->used()) {
-            block = m_blocks[i].xs[j];
-            break;
-        }
+  block<K, V> *block = m_blocks[i].xs[N - 1];
+  for (int j = 0; j < N - 1; j++) {
+    if (!m_blocks[i].xs[j]->used()) {
+      block = m_blocks[i].xs[j];
+      break;
     }
+  }
 
-    block->set_used();
-    return block;
+  block->set_used();
+  return block;
 }
 
 template <class K, class V, int N>
-block<K, V> *
-block_storage<K, V, N>::get_largest_block()
-{
-    return get_block((m_size == 0) ? 0 : m_size - 1);
+block<K, V> *block_storage<K, V, N>::get_largest_block() {
+  return get_block((m_size == 0) ? 0 : m_size - 1);
 }
 
 template <class K, class V, int N>
-void
-block_storage<K, V, N>::print() const
-{
-    for (size_t i = 0; i < m_size; i++) {
-        printf("%zu: {%d", i, m_blocks[i].xs[0]->used());
-        for (int j = 1; j < N; j++) {
-            printf(", %d", m_blocks[i].xs[j]->used());
-        }
-        printf("}, ");
+void block_storage<K, V, N>::print() const {
+  for (size_t i = 0; i < m_size; i++) {
+    printf("%zu: {%d", i, m_blocks[i].xs[0]->used());
+    for (int j = 1; j < N; j++) {
+      printf(", %d", m_blocks[i].xs[j]->used());
     }
-    printf("\n");
+    printf("}, ");
+  }
+  printf("\n");
 }

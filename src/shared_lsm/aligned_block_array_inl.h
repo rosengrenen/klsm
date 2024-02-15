@@ -22,26 +22,24 @@
 #endif
 
 template <class K, class V, int Rlx, int Algn>
-aligned_block_array<K, V, Rlx, Algn>::aligned_block_array()
-{
-    void *buf_ptr = m_buffer;
+aligned_block_array<K, V, Rlx, Algn>::aligned_block_array() {
+  void *buf_ptr = m_buffer;
 
 #ifdef __GNUC__
 #if __GNUC_PREREQ(5, 0)
-    size_t buf_size = BUFFER_SIZE;
-    void *aligned_ptr = std::align(Algn, ARRAY_SIZE, buf_ptr, buf_size);
+  size_t buf_size = BUFFER_SIZE;
+  void *aligned_ptr = std::align(Algn, ARRAY_SIZE, buf_ptr, buf_size);
 #else
-    void *aligned_ptr = (void *)((((intptr_t) buf_ptr) + Algn - 1) & ~(Algn - 1));
+  void *aligned_ptr = (void *)((((intptr_t)buf_ptr) + Algn - 1) & ~(Algn - 1));
 #endif
 #endif
-    assert(aligned_ptr != nullptr);
-    assert(((intptr_t)aligned_ptr & (Algn - 1)) == 0);
+  assert(aligned_ptr != nullptr);
+  assert(((intptr_t)aligned_ptr & (Algn - 1)) == 0);
 
-    m_ptr = new (aligned_ptr) block_array<K, V, Rlx>();
+  m_ptr = new (aligned_ptr) block_array<K, V, Rlx>();
 }
 
 template <class K, class V, int Rlx, int Algn>
-aligned_block_array<K, V, Rlx, Algn>::~aligned_block_array()
-{
-    m_ptr->~block_array();
+aligned_block_array<K, V, Rlx, Algn>::~aligned_block_array() {
+  m_ptr->~block_array();
 }

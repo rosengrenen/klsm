@@ -18,62 +18,44 @@
  */
 
 template <class K, class V, int Rlx>
-void
-dist_lsm<K, V, Rlx>::insert(const K &key)
-{
-    insert(key, key);
+void dist_lsm<K, V, Rlx>::insert(const K &key) {
+  insert(key, key);
 }
 
 template <class K, class V, int Rlx>
-void
-dist_lsm<K, V, Rlx>::insert(const K &key,
-                            const V &val)
-{
-    m_local.get()->insert(key, val, nullptr);
+void dist_lsm<K, V, Rlx>::insert(const K &key, const V &val) {
+  m_local.get()->insert(key, val, nullptr);
 }
 
 template <class K, class V, int Rlx>
-void
-dist_lsm<K, V, Rlx>::insert(const K &key,
-                            const V &val,
-                            shared_lsm<K, V, Rlx> *slsm)
-{
-    m_local.get()->insert(key, val, slsm);
+void dist_lsm<K, V, Rlx>::insert(const K &key, const V &val,
+                                 shared_lsm<K, V, Rlx> *slsm) {
+  m_local.get()->insert(key, val, slsm);
 }
 
 template <class K, class V, int Rlx>
-bool
-dist_lsm<K, V, Rlx>::delete_min(V &val)
-{
-    return m_local.get()->delete_min(this, val);
+bool dist_lsm<K, V, Rlx>::delete_min(V &val) {
+  return m_local.get()->delete_min(this, val);
 }
 
 template <class K, class V, int Rlx>
-bool
-dist_lsm<K, V, Rlx>::delete_min(K &key, V &val)
-{
-    return m_local.get()->delete_min(this, key, val);
+bool dist_lsm<K, V, Rlx>::delete_min(K &key, V &val) {
+  return m_local.get()->delete_min(this, key, val);
 }
 
 template <class K, class V, int Rlx>
-void
-dist_lsm<K, V, Rlx>::find_min(typename block<K, V>::peek_t &best)
-{
-    m_local.get()->peek(best);
+void dist_lsm<K, V, Rlx>::find_min(typename block<K, V>::peek_t &best) {
+  m_local.get()->peek(best);
 }
 
 template <class K, class V, int Rlx>
-int
-dist_lsm<K, V, Rlx>::spy()
-{
-    return m_local.get()->spy(this);
+int dist_lsm<K, V, Rlx>::spy() {
+  return m_local.get()->spy(this);
 }
 
 template <class K, class V, int Rlx>
-void
-dist_lsm<K, V, Rlx>::print()
-{
-    for (size_t i = 0; i < m_local.num_threads(); i++) {
-        m_local.get(i)->print();
-    }
+void dist_lsm<K, V, Rlx>::print() {
+  for (size_t i = 0; i < m_local.num_threads(); i++) {
+    m_local.get(i)->print();
+  }
 }

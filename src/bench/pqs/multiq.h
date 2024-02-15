@@ -26,87 +26,80 @@
 #include "util/thread_local_ptr.h"
 #include "util/xorshf96.h"
 
-namespace kpqbench
-{
+namespace kpqbench {
 
 /**
  * Reimplementation of a multiqueue as described in Rihani, Sanders, Dementiev:
- * "MultiQueues: Simpler, Faster, and Better Relaxed Concurrent Priority Queues".
- * C is a tuning parameter specifying the number of internal queues per thread.
+ * "MultiQueues: Simpler, Faster, and Better Relaxed Concurrent Priority
+ * Queues". C is a tuning parameter specifying the number of internal queues per
+ * thread.
  */
 template <class K, class V, int C = 4>
-class multiq
-{
-private:
-    constexpr static K SENTINEL_KEY = std::numeric_limits<K>::max();
-    constexpr static int CACHE_LINE_SIZE = 64;
+class multiq {
+ private:
+  constexpr static K SENTINEL_KEY = std::numeric_limits<K>::max();
+  constexpr static int CACHE_LINE_SIZE = 64;
 
-    struct entry
-    {
-        entry(K k, V v) : key(k), value(v) { }
+  struct entry {
+    entry(K k, V v) : key(k), value(v) {}
 
-        K key;
-        V value;
+    K key;
+    V value;
 
-        bool operator>(const entry &that) const
-        {
-            return this->key > that.key;
-        }
-    };
+    bool operator>(const entry &that) const { return this->key > that.key; }
+  };
 
-    typedef std::priority_queue<entry, std::vector<entry>, std::greater<entry>> pq;
+  typedef std::priority_queue<entry, std::vector<entry>, std::greater<entry>>
+      pq;
 
-    struct local_queue
-    {
-        local_queue()
-        {
-            m_pq.push({ SENTINEL_KEY, V { } });
-            m_top = SENTINEL_KEY;
-        }
+  struct local_queue {
+    local_queue() {
+      m_pq.push({SENTINEL_KEY, V{}});
+      m_top = SENTINEL_KEY;
+    }
 
-        pq m_pq;
-        K m_top;
+    pq m_pq;
+    K m_top;
 
-        char m_padding[CACHE_LINE_SIZE - sizeof(m_top) - sizeof(m_pq)];
-    } __attribute__((aligned(64)));
+    char m_padding[CACHE_LINE_SIZE - sizeof(m_top) - sizeof(m_pq)];
+  } __attribute__((aligned(64)));
 
-    struct local_lock
-    {
-        local_lock() : m_is_locked(false) { }
+  struct local_lock {
+    local_lock() : m_is_locked(false) {}
 
-        std::atomic<bool> m_is_locked;
+    std::atomic<bool> m_is_locked;
 
-        char m_padding[CACHE_LINE_SIZE - sizeof(m_is_locked)];
-    } __attribute__((aligned(64)));
+    char m_padding[CACHE_LINE_SIZE - sizeof(m_is_locked)];
+  } __attribute__((aligned(64)));
 
-public:
-    multiq(const size_t num_threads);
-    virtual ~multiq();
+ public:
+  multiq(const size_t num_threads);
+  virtual ~multiq();
 
-    void insert(const K &key, const V &value);
-    bool delete_min(V &value);
-    bool delete_min(K &key, V &value);
-    void clear();
+  void insert(const K &key, const V &value);
+  bool delete_min(V &value);
+  bool delete_min(K &key, V &value);
+  void clear();
 
-    void print() const;
+  void print() const;
 
-    void init_thread(const size_t) const { }
-    constexpr static bool supports_concurrency() { return true; }
+  void init_thread(const size_t) const {}
+  constexpr static bool supports_concurrency() { return true; }
 
-private:
-    size_t num_queues() const { return m_num_threads * C; }
-    bool lock(const size_t ix);
-    void unlock(const size_t ix);
+ private:
+  size_t num_queues() const { return m_num_threads * C; }
+  bool lock(const size_t ix);
+  void unlock(const size_t ix);
 
-private:
-    const size_t m_num_threads;
+ private:
+  const size_t m_num_threads;
 
-    local_queue *m_queues;
-    local_lock *m_locks;
+  local_queue *m_queues;
+  local_lock *m_locks;
 };
 
 #include "multiq_inl.h"
 
-}
+}  // namespace kpqbench
 
 #endif /* __MULTIQ_H */

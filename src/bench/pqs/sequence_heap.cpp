@@ -23,47 +23,38 @@
 
 #include "knheap.h"
 
-namespace kpqbench
-{
+namespace kpqbench {
 
 template <class T>
-sequence_heap<T>::sequence_heap()
-{
-    m_pq = new KNHeap<T, T>(std::numeric_limits<uint32_t>::max(),
-                            std::numeric_limits<uint32_t>::min());
+sequence_heap<T>::sequence_heap() {
+  m_pq = new KNHeap<T, T>(std::numeric_limits<uint32_t>::max(),
+                          std::numeric_limits<uint32_t>::min());
 }
 
 template <class T>
-void
-sequence_heap<T>::insert(const T &key,
-                         const T &value)
-{
-    m_pq->insert(key, value);
+void sequence_heap<T>::insert(const T &key, const T &value) {
+  m_pq->insert(key, value);
 }
 
 template <class T>
-bool
-sequence_heap<T>::delete_min(T &v)
-{
-    if (m_pq->getSize() == 0) {
-        return false;
-    }
+bool sequence_heap<T>::delete_min(T &v) {
+  if (m_pq->getSize() == 0) {
+    return false;
+  }
 
-    T w;
-    m_pq->deleteMin(&w, &v);
+  T w;
+  m_pq->deleteMin(&w, &v);
 
-    return true;
+  return true;
 }
 
 template <class T>
-void
-sequence_heap<T>::clear()
-{
-    delete m_pq;
-    m_pq = new KNHeap<T, T>(std::numeric_limits<uint32_t>::max(),
-                            std::numeric_limits<uint32_t>::min());
+void sequence_heap<T>::clear() {
+  delete m_pq;
+  m_pq = new KNHeap<T, T>(std::numeric_limits<uint32_t>::max(),
+                          std::numeric_limits<uint32_t>::min());
 }
 
 template class sequence_heap<uint32_t>;
 
-}
+}  // namespace kpqbench

@@ -24,48 +24,39 @@
 #include <cassert>
 #include <cstddef>
 
-namespace kpq
-{
+namespace kpq {
 
 typedef uint32_t version_t;
 
 template <class K, class V>
-class item
-{
-public:
-    item();
+class item {
+ public:
+  item();
 
-    void initialize(const K &key,
-                    const V &val);
-    bool take(const version_t version,
-              V &val);
-    bool take(const version_t version,
-              K &key, V &val);
+  void initialize(const K &key, const V &val);
+  bool take(const version_t version, V &val);
+  bool take(const version_t version, K &key, V &val);
 
-    K key() const;
-    V val() const;
+  K key() const;
+  V val() const;
 
-    version_t version() const;
-    bool used() const;
+  version_t version() const;
+  bool used() const;
 
-    class reuse
-    {
-    public:
-        bool operator()(const item<K, V> &item) const
-        {
-            return !item.used();
-        }
-    };
+  class reuse {
+   public:
+    bool operator()(const item<K, V> &item) const { return !item.used(); }
+  };
 
-private:
-    /** Even versions are reusable, odd versions are in use. */
-    std::atomic<version_t> m_version;
-    K m_key;
-    V m_val;
+ private:
+  /** Even versions are reusable, odd versions are in use. */
+  std::atomic<version_t> m_version;
+  K m_key;
+  V m_val;
 };
 
 #include "item_inl.h"
 
-}
+}  // namespace kpq
 
 #endif /* __ITEM_H */

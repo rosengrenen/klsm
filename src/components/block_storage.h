@@ -24,44 +24,42 @@
 
 #include "block.h"
 
-namespace kpq
-{
+namespace kpq {
 
 /**
  * Maintains N-tuples of memory blocks of size 2^i.
  */
 
 template <class K, class V, int N>
-class block_storage
-{
-private:
-    static constexpr size_t MAX_BLOCKS = 32;  // TODO: Global setting.
+class block_storage {
+ private:
+  static constexpr size_t MAX_BLOCKS = 32;  // TODO: Global setting.
 
-    struct block_tuple {
-        block<K, V> *xs[N];
-    };
+  struct block_tuple {
+    block<K, V> *xs[N];
+  };
 
-public:
-    block_storage() : m_blocks { { nullptr } }, m_size(0) { }
-    virtual ~block_storage();
+ public:
+  block_storage() : m_blocks{{nullptr}}, m_size(0) {}
+  virtual ~block_storage();
 
-    /**
-     * Returns an unused block of size 2^i. If such a block does not exist,
-     * a new N-tuple of size 2^i is allocated.
-     */
-    block<K, V> *get_block(const size_t i);
+  /**
+   * Returns an unused block of size 2^i. If such a block does not exist,
+   * a new N-tuple of size 2^i is allocated.
+   */
+  block<K, V> *get_block(const size_t i);
 
-    block<K, V> *get_largest_block();
+  block<K, V> *get_largest_block();
 
-    void print() const;
+  void print() const;
 
-private:
-    block_tuple m_blocks[MAX_BLOCKS];
-    size_t m_size;
+ private:
+  block_tuple m_blocks[MAX_BLOCKS];
+  size_t m_size;
 };
 
 #include "block_storage_inl.h"
 
-}
+}  // namespace kpq
 
 #endif /* __BLOCK_STORAGE_H */

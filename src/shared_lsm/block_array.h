@@ -24,68 +24,71 @@
 #include <cstring>
 #include <vector>
 
+#include "block_pivots.h"
+#include "block_pool.h"
 #include "components/block.h"
 #include "util/counters.h"
 #include "util/xorshf96.h"
-#include "block_pivots.h"
-#include "block_pool.h"
 
 namespace kpq {
 
 template <class K, class V, int Rlx>
 class block_array {
-    /* For access to blocks during publishing. */
-    template <class X, class Y, int Z>
-    friend class shared_lsm_local;
-public:
-    static constexpr size_t MAX_BLOCKS = 32;
+  /* For access to blocks during publishing. */
+  template <class X, class Y, int Z>
+  friend class shared_lsm_local;
 
-    block_array();
-    virtual ~block_array();
+ public:
+  static constexpr size_t MAX_BLOCKS = 32;
 
-    /** May only be called when this block is not visible to other threads. */
-    void insert(block<K, V> *block,
-                block_pool<K, V> *pool);
+  block_array();
+  virtual ~block_array();
 
-    /** Callable from other threads. */
-    bool delete_min(V &val);
-    typename block<K, V>::peek_t peek();
+  /** May only be called when this block is not visible to other threads. */
+  void insert(block<K, V> *block, block_pool<K, V> *pool);
 
-    /** Copies the given block array into the current instance.
-      * The copy is shallow, i.e. only block pointers are copied. */
-    void copy_from(const block_array<K, V, Rlx> *that);
+  /** Callable from other threads. */
+  bool delete_min(V &val);
+  typename block<K, V>::peek_t peek();
 
-    version_t version() const { return m_version.load(std::memory_order_relaxed); }
-    void increment_version() { m_version.fetch_add(1, std::memory_order_relaxed); }
+  /** Copies the given block array into the current instance.
+   * The copy is shallow, i.e. only block pointers are copied. */
+  void copy_from(const block_array<K, V, Rlx> *that);
 
-private:
-    /** May only be called when this block is not visible to other threads. */
-    void compact(block_pool<K, V> *pool);
-    void remove_null_blocks();
+  version_t version() const {
+    return m_version.load(std::memory_order_relaxed);
+  }
+  void increment_version() {
+    m_version.fetch_add(1, std::memory_order_relaxed);
+  }
 
-    /** Utility functions for mutating blocks together with pivots. */
-    void block_insert(const size_t block_ix, block<K, V> *block);
-    void block_set(const size_t block_ix, block<K, V> *block);
+ private:
+  /** May only be called when this block is not visible to other threads. */
+  void compact(block_pool<K, V> *pool);
+  void remove_null_blocks();
 
-private:
+  /** Utility functions for mutating blocks together with pivots. */
+  void block_insert(const size_t block_ix, block<K, V> *block);
+  void block_set(const size_t block_ix, block<K, V> *block);
 
-    /** Stores block pointers from largest to smallest (to stay consistent with
-     *  clsm_local). The usual invariants (block size strictly descending, only
-     *  one block of each size in array) are preserved while the block array is
-     *  visible to other threads.
-     */
-    block<K, V> *m_blocks[MAX_BLOCKS];
-    size_t m_size;
+ private:
+  /** Stores block pointers from largest to smallest (to stay consistent with
+   *  clsm_local). The usual invariants (block size strictly descending, only
+   *  one block of each size in array) are preserved while the block array is
+   *  visible to other threads.
+   */
+  block<K, V> *m_blocks[MAX_BLOCKS];
+  size_t m_size;
 
-    block_pivots<K, V, Rlx, MAX_BLOCKS> m_pivots;
+  block_pivots<K, V, Rlx, MAX_BLOCKS> m_pivots;
 
-    std::atomic<version_t> m_version;
+  std::atomic<version_t> m_version;
 
-    xorshf96 m_gen;
+  xorshf96 m_gen;
 };
 
 #include "block_array_inl.h"
 
-}
+}  // namespace kpq
 
 #endif /* __BLOCK_ARRAY_H */

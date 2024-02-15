@@ -26,77 +26,67 @@
 
 using kpq::thread_local_ptr;
 
-namespace kpqbench
-{
+namespace kpqbench {
 
 /**
  * 'cheap' stands for concurrent heap, and simply consists of a thread-local
- * std::priority_queue. Unlike the CLSM, there is no spy() operation, and threads
- * may only access elements they added themselves.
+ * std::priority_queue. Unlike the CLSM, there is no spy() operation, and
+ * threads may only access elements they added themselves.
  */
 template <class K, class V>
-class cheap
-{
-private:
-    class entry_t
-    {
-    public:
-        K key;
-        V value;
+class cheap {
+ private:
+  class entry_t {
+   public:
+    K key;
+    V value;
 
-        bool operator>(const entry_t &that) const
-        {
-            return this->key > that.key;
-        }
-    };
+    bool operator>(const entry_t &that) const { return this->key > that.key; }
+  };
 
-public:
-    void insert(const K &key, const V &value);
-    bool delete_min(V &value);
+ public:
+  void insert(const K &key, const V &value);
+  bool delete_min(V &value);
 
-    void print() const;
+  void print() const;
 
-    void init_thread(const size_t) const { }
-    constexpr static bool supports_concurrency() { return true; }
+  void init_thread(const size_t) const {}
+  constexpr static bool supports_concurrency() { return true; }
 
-private:
-    typedef std::priority_queue<entry_t, std::vector<entry_t>, std::greater<entry_t>> pq_t;
+ private:
+  typedef std::priority_queue<entry_t, std::vector<entry_t>,
+                              std::greater<entry_t>>
+      pq_t;
 
-    thread_local_ptr<pq_t> m_q;
+  thread_local_ptr<pq_t> m_q;
 };
 
 template <class K, class V>
-bool
-cheap<K, V>::delete_min(V &value)
-{
-    pq_t *pq = m_q.get();
-    if (pq->empty()) {
-        return false;
-    }
+bool cheap<K, V>::delete_min(V &value) {
+  pq_t *pq = m_q.get();
+  if (pq->empty()) {
+    return false;
+  }
 
-    entry_t entry = pq->top();
-    pq->pop();
+  entry_t entry = pq->top();
+  pq->pop();
 
-    value = entry.value;
+  value = entry.value;
 
-    return true;
+  return true;
 }
 
 template <class K, class V>
-void
-cheap<K, V>::insert(const K &key,
-                    const V &value)
-{
-    pq_t *pq = m_q.get();
-    pq->push(entry_t { key, value });
+void cheap<K, V>::insert(const K &key, const V &value) {
+  pq_t *pq = m_q.get();
+  pq->push(entry_t{key, value});
 }
 
 template <class K, class V>
-void cheap<K, V>::print() const
-{
-    /* NOP */
+void cheap<K, V>::print() const {
+  /* NOP */
 }
 
-}
+}  // namespace kpqbench
 
 #endif /* __CHEAP_H */

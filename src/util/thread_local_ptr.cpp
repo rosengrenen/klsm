@@ -19,32 +19,22 @@
 
 #include "thread_local_ptr.h"
 
-namespace kpq
-{
+namespace kpq {
 
-/** An artificial thread id which can be used to index into the array of items. */
+/** An artificial thread id which can be used to index into the array of items.
+ */
 static constexpr int32_t TID_UNSET = -1;
 static thread_local int32_t m_tid = TID_UNSET;
 static std::atomic<int32_t> m_max_tid(0);
 
-void
-set_tid()
-{
-    if (m_tid == TID_UNSET) {
-        m_tid = m_max_tid.fetch_add(1, std::memory_order_relaxed);
-    }
+void set_tid() {
+  if (m_tid == TID_UNSET) {
+    m_tid = m_max_tid.fetch_add(1, std::memory_order_relaxed);
+  }
 }
 
-int32_t
-tid()
-{
-    return m_tid;
-}
+int32_t tid() { return m_tid; }
 
-int32_t
-max_tid()
-{
-    return m_max_tid.load(std::memory_order_relaxed);
-}
+int32_t max_tid() { return m_max_tid.load(std::memory_order_relaxed); }
 
-}
+}  // namespace kpq

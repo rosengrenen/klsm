@@ -22,95 +22,90 @@
 
 #include <cstddef>
 
-namespace kpq
-{
+namespace kpq {
 
 /**
  * The wait-free memory management scheme by Wimmer (www.pheet.org).
  */
 
 template <class T, size_t BlockSize>
-class item_allocator_item
-{
-public:
-    T m_items[BlockSize];
-    item_allocator_item<T, BlockSize> *m_next;
+class item_allocator_item {
+ public:
+  T m_items[BlockSize];
+  item_allocator_item<T, BlockSize> *m_next;
 };
 
 template <class T, class ReuseCheck, size_t BlockSize = 1024>
-class item_allocator
-{
-    static constexpr size_t AMORTIZATION = 1;
-public:
-    typedef T              value_type;
-    typedef T             *pointer;
-    typedef const T       *const_pointer;
-    typedef T             &reference;
-    typedef const T       &const_reference;
-    typedef std::size_t    size_type;
-    typedef std::ptrdiff_t difference_type;
+class item_allocator {
+  static constexpr size_t AMORTIZATION = 1;
 
-    item_allocator() :
-        m_offset(0),
+ public:
+  typedef T value_type;
+  typedef T *pointer;
+  typedef const T *const_pointer;
+  typedef T &reference;
+  typedef const T &const_reference;
+  typedef std::size_t size_type;
+  typedef std::ptrdiff_t difference_type;
+
+  item_allocator()
+      : m_offset(0),
         m_amortized(0),
         m_total_size(BlockSize),
         m_new_block(true),
-        is_reusable()
-    {
-        m_head = new item_allocator_item<T, BlockSize>();
-        m_head->m_next = m_head;
-    }
+        is_reusable() {
+    m_head = new item_allocator_item<T, BlockSize>();
+    m_head->m_next = m_head;
+  }
 
-    virtual ~item_allocator()
-    {
-        auto next = m_head->m_next;
-        while (next != m_head) {
-            auto nnext = next->m_next;
-            delete next;
-            next = nnext;
+  virtual ~item_allocator() {
+    auto next = m_head->m_next;
+    while (next != m_head) {
+      auto nnext = next->m_next;
+      delete next;
+      next = nnext;
+    }
+    delete m_head;
+  }
+
+  pointer acquire() {
+    while (true) {
+      while (m_offset < BlockSize) {
+        auto item = &m_head->m_items[m_offset++];
+        if (m_new_block || is_reusable(*item)) {
+          m_amortized += 1 + AMORTIZATION;
+          return item;
         }
-        delete m_head;
+      }
+
+      if (m_amortized < BlockSize) {
+        auto new_block = new item_allocator_item<T, BlockSize>();
+        new_block->m_next = m_head->m_next;
+        m_head->m_next = new_block;
+        m_head = new_block;
+        m_total_size += BlockSize;
+        m_new_block = true;
+      } else {
+        m_amortized = std::min(m_amortized, m_total_size * AMORTIZATION);
+        m_amortized -= BlockSize;
+        m_head = m_head->m_next;
+        m_new_block = false;
+      }
+      m_offset = 0;
     }
+  }
 
-    pointer acquire()
-    {
-        while (true) {
-            while (m_offset < BlockSize) {
-                auto item = &m_head->m_items[m_offset++];
-                if (m_new_block || is_reusable(*item)) {
-                    m_amortized += 1 + AMORTIZATION;
-                    return item;
-                }
-            }
+ private:
+  item_allocator_item<T, BlockSize> *m_head;
 
-            if (m_amortized < BlockSize) {
-                auto new_block = new item_allocator_item<T, BlockSize>();
-                new_block->m_next = m_head->m_next;
-                m_head->m_next = new_block;
-                m_head = new_block;
-                m_total_size += BlockSize;
-                m_new_block = true;
-            } else {
-                m_amortized = std::min(m_amortized, m_total_size * AMORTIZATION);
-                m_amortized -= BlockSize;
-                m_head = m_head->m_next;
-                m_new_block = false;
-            }
-            m_offset = 0;
-        }
-    }
+  size_t m_offset;
+  size_t m_amortized;
+  size_t m_total_size;
+  bool m_new_block;
 
-private:
-    item_allocator_item<T, BlockSize> *m_head;
-
-    size_t m_offset;
-    size_t m_amortized;
-    size_t m_total_size;
-    bool m_new_block;
-
-    const ReuseCheck is_reusable;
+  const ReuseCheck is_reusable;
 };
 
-}
+}  // namespace kpq
 
 #endif /* __MM_H */

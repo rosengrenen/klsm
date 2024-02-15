@@ -22,72 +22,71 @@
 
 #include <atomic>
 
-#include "util/mm.h"
 #include "block_array.h"
 #include "block_pool.h"
+#include "util/mm.h"
 #include "versioned_array_ptr.h"
 
 namespace kpq {
 
 template <class K, class V, int Rlx>
 class shared_lsm_local {
-    template <class X, class Y, int Z>
-    friend class shared_lsm;
-public:
-    shared_lsm_local();
-    virtual ~shared_lsm_local() { }
+  template <class X, class Y, int Z>
+  friend class shared_lsm;
 
-    void insert(const K &key,
-                const V &val,
-                versioned_array_ptr<K, V, Rlx> &global_array);
-    void insert(block<K, V> *b,
-                versioned_array_ptr<K, V, Rlx> &global_array);
+ public:
+  shared_lsm_local();
+  virtual ~shared_lsm_local() {}
 
-    bool delete_min(V &val,
-                    versioned_array_ptr<K, V, Rlx> &global_array);
-    void peek(typename block<K, V>::peek_t &best,
+  void insert(const K &key, const V &val,
               versioned_array_ptr<K, V, Rlx> &global_array);
+  void insert(block<K, V> *b, versioned_array_ptr<K, V, Rlx> &global_array);
 
-private:
-    /** The internal function responsible for actual insertion. The given
-     *  block must have been allocated by the shared lsm. */
-    void insert_block(block<K, V> *b,
-                      versioned_array_ptr<K, V, Rlx> &global_array);
+  bool delete_min(V &val, versioned_array_ptr<K, V, Rlx> &global_array);
+  void peek(typename block<K, V>::peek_t &best,
+            versioned_array_ptr<K, V, Rlx> &global_array);
 
-    /** Refreshes the local array copy and ensures that it is both up to date
-     *  and consistent. observed_packed and observed_version are set to the
-     *  corresponding values used to perform the copy. */
-    void refresh_local_array_copy(block_array<K, V, Rlx> *&observed_packed,
-                                  version_t &observed_version,
-                                  versioned_array_ptr<K, V, Rlx> &global_array);
+ private:
+  /** The internal function responsible for actual insertion. The given
+   *  block must have been allocated by the shared lsm. */
+  void insert_block(block<K, V> *b,
+                    versioned_array_ptr<K, V, Rlx> &global_array);
 
-    bool local_array_copy_is_fresh(versioned_array_ptr<K, V, Rlx> &global_array) const;
+  /** Refreshes the local array copy and ensures that it is both up to date
+   *  and consistent. observed_packed and observed_version are set to the
+   *  corresponding values used to perform the copy. */
+  void refresh_local_array_copy(block_array<K, V, Rlx> *&observed_packed,
+                                version_t &observed_version,
+                                versioned_array_ptr<K, V, Rlx> &global_array);
 
-private:
-    /** Caches the previously peeked item in case we can short-circuit and simply
-     *  return it. */
-    typename block<K, V>::peek_t m_cached_best;
+  bool local_array_copy_is_fresh(
+      versioned_array_ptr<K, V, Rlx> &global_array) const;
 
-    /* ---- Item memory management. ---- */
+ private:
+  /** Caches the previously peeked item in case we can short-circuit and simply
+   *  return it. */
+  typename block<K, V>::peek_t m_cached_best;
 
-    item_allocator<item<K, V>, typename item<K, V>::reuse> m_item_pool;
+  /* ---- Item memory management. ---- */
 
-    /* ---- Block memory management. ---- */
+  item_allocator<item<K, V>, typename item<K, V>::reuse> m_item_pool;
 
-    block_pool<K, V> m_block_pool;
+  /* ---- Block memory management. ---- */
 
-    /* ---- Block array memory management. ---- */
+  block_pool<K, V> m_block_pool;
 
-    /** Contains a copy of the global block array, updated regularly. */
-    block_array<K, V, Rlx> m_local_array_copy;
+  /* ---- Block array memory management. ---- */
 
-    /** Local memory pools for use by block arrays. */
-    aligned_block_array<K, V, Rlx> m_array_pool_odds;
-    aligned_block_array<K, V, Rlx> m_array_pool_evens;
+  /** Contains a copy of the global block array, updated regularly. */
+  block_array<K, V, Rlx> m_local_array_copy;
+
+  /** Local memory pools for use by block arrays. */
+  aligned_block_array<K, V, Rlx> m_array_pool_odds;
+  aligned_block_array<K, V, Rlx> m_array_pool_evens;
 };
 
 #include "shared_lsm_local_inl.h"
 
-}
+}  // namespace kpq
 
 #endif /* __SHARED_LSM_LOCAL_H */

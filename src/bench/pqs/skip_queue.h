@@ -22,24 +22,22 @@
 
 #include "skip_list.h"
 
-namespace kpqbench
-{
+namespace kpqbench {
 
 template <class T>
-class skip_queue
-{
-public:
-    void insert(const T &key, const T &value);
-    bool delete_min(T &v);
-    void clear();
+class skip_queue {
+ public:
+  void insert(const T &key, const T &value);
+  bool delete_min(T &v);
+  void clear();
 
-    void init_thread(const size_t) const { }
-    constexpr static bool supports_concurrency() { return false; }
+  void init_thread(const size_t) const {}
+  constexpr static bool supports_concurrency() { return false; }
 
-private:
-    goodliffe::multi_skip_list<T> m_pq;
+ private:
+  goodliffe::multi_skip_list<T> m_pq;
 };
 
-}
+}  // namespace kpqbench
 
 #endif /* __SKIP_QUEUE_H */

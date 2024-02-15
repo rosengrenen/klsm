@@ -20,36 +20,35 @@
 #ifndef __SPRAYLIST_H
 #define __SPRAYLIST_H
 
-#include <iostream>
 #include <cstdint>
+#include <iostream>
 
 struct sl_intset;
 typedef sl_intset sl_intset_t;
 
 namespace kpqbench {
 
-class spraylist
-{
-public:
-    spraylist(const size_t nthreads);
-    virtual ~spraylist();
+class spraylist {
+ public:
+  spraylist(const size_t nthreads);
+  virtual ~spraylist();
 
-    void init_thread(const size_t nthreads);
+  void init_thread(const size_t nthreads);
 
-    void insert(const uint32_t &k, const uint32_t &v);
-    void insert(const size_t &k, const size_t &v);
-    bool delete_min(uint32_t &v);
-    bool delete_min(size_t &k, size_t &v);
+  void insert(const uint32_t &k, const uint32_t &v);
+  void insert(const size_t &k, const size_t &v);
+  bool delete_min(uint32_t &v);
+  bool delete_min(size_t &k, size_t &v);
 
-    static void print_name() { std::cout << "spraylist"; }
-    constexpr static bool supports_concurrency() { return true; }
+  static void print_name() { std::cout << "spraylist"; }
+  constexpr static bool supports_concurrency() { return true; }
 
-private:
-    typedef sl_intset_t pq_t;
+ private:
+  typedef sl_intset_t pq_t;
 
-    pq_t *m_q;
+  pq_t *m_q;
 };
 
-}
+}  // namespace kpqbench
 
 #endif /* __SPRAYLIST_H */

@@ -20,114 +20,98 @@
 static thread_local kpq::xorshf96 local_rng;
 
 template <class K, class V, int C>
-multiq<K, V, C>::multiq(const size_t num_threads) :
-    m_num_threads(num_threads)
-{
-    m_queues = new local_queue[num_queues()]();
-    m_locks = new local_lock[num_queues()]();
+multiq<K, V, C>::multiq(const size_t num_threads) : m_num_threads(num_threads) {
+  m_queues = new local_queue[num_queues()]();
+  m_locks = new local_lock[num_queues()]();
 }
 
 template <class K, class V, int C>
-multiq<K, V, C>::~multiq()
-{
-    delete[] m_queues;
-    delete[] m_locks;
+multiq<K, V, C>::~multiq() {
+  delete[] m_queues;
+  delete[] m_locks;
 }
 
 template <class K, class V, int C>
-bool
-multiq<K, V, C>::delete_min(K &key, V &value)
-{
-    /* Peek at two random queues and lock the one with the minimal item. */
-    const int nqueues = num_queues();
-    size_t i, j;
-    int retry_count = 25 * C;
-    while (true) {
-        do {
-            i = local_rng() % nqueues;
-            j = local_rng() % nqueues;
-
-            if (m_queues[i].m_top > m_queues[j].m_top) {
-                std::swap(i, j);
-            }
-        } while (!lock(i));
-
-        auto &pq = m_queues[i].m_pq;
-        const auto item = pq.top();
-
-        if (item.key == SENTINEL_KEY) {
-            // Empty queue, retry a few times.
-            // TODO: Not a permanent solution
-            unlock(i);
-            if (retry_count == 0) {
-                return false;
-            } else {
-                retry_count--;
-                continue;
-            }
-        } else {
-            key = item.key;
-            value = item.value;
-            pq.pop();
-            unlock(i);
-            return true;
-        }
-    }
-
-    assert(false);  // Never reached.
-    return false;
-}
-
-
-template <class K, class V, int C>
-bool
-multiq<K, V, C>::delete_min(V &value)
-{
-    K key;
-    return delete_min(key, value);
-}
-
-template <class K, class V, int C>
-void
-multiq<K, V, C>::insert(const K &key,
-                        const V &value)
-{
-    /* Lock a random priority queue and insert into it. */
-
-    const int nqueues = num_queues();
-    size_t i;
-
+bool multiq<K, V, C>::delete_min(K &key, V &value) {
+  /* Peek at two random queues and lock the one with the minimal item. */
+  const int nqueues = num_queues();
+  size_t i, j;
+  int retry_count = 25 * C;
+  while (true) {
     do {
-        i = local_rng() % nqueues;
+      i = local_rng() % nqueues;
+      j = local_rng() % nqueues;
+
+      if (m_queues[i].m_top > m_queues[j].m_top) {
+        std::swap(i, j);
+      }
     } while (!lock(i));
 
-    m_queues[i].m_pq.emplace(key, value);
-    m_queues[i].m_top = m_queues[i].m_pq.top().key;
+    auto &pq = m_queues[i].m_pq;
+    const auto item = pq.top();
 
-    unlock(i);
+    if (item.key == SENTINEL_KEY) {
+      // Empty queue, retry a few times.
+      // TODO: Not a permanent solution
+      unlock(i);
+      if (retry_count == 0) {
+        return false;
+      } else {
+        retry_count--;
+        continue;
+      }
+    } else {
+      key = item.key;
+      value = item.value;
+      pq.pop();
+      unlock(i);
+      return true;
+    }
+  }
+
+  assert(false);  // Never reached.
+  return false;
 }
 
 template <class K, class V, int C>
-bool
-multiq<K, V, C>::lock(const size_t ix)
-{
-    bool expected = false;
-    return m_locks[ix].m_is_locked.compare_exchange_strong(
-            expected, true, std::memory_order_relaxed);
+bool multiq<K, V, C>::delete_min(V &value) {
+  K key;
+  return delete_min(key, value);
 }
 
 template <class K, class V, int C>
-void
-multiq<K, V, C>::unlock(const size_t ix)
-{
-    bool expected = true;
-    const bool succeeded = m_locks[ix].m_is_locked.compare_exchange_strong(
-                    expected, false, std::memory_order_relaxed);
-    assert(succeeded), (void)succeeded;
+void multiq<K, V, C>::insert(const K &key, const V &value) {
+  /* Lock a random priority queue and insert into it. */
+
+  const int nqueues = num_queues();
+  size_t i;
+
+  do {
+    i = local_rng() % nqueues;
+  } while (!lock(i));
+
+  m_queues[i].m_pq.emplace(key, value);
+  m_queues[i].m_top = m_queues[i].m_pq.top().key;
+
+  unlock(i);
 }
 
 template <class K, class V, int C>
-void multiq<K, V, C>::print() const
-{
-    /* NOP */
+bool multiq<K, V, C>::lock(const size_t ix) {
+  bool expected = false;
+  return m_locks[ix].m_is_locked.compare_exchange_strong(
+      expected, true, std::memory_order_relaxed);
+}
+
+template <class K, class V, int C>
+void multiq<K, V, C>::unlock(const size_t ix) {
+  bool expected = true;
+  const bool succeeded = m_locks[ix].m_is_locked.compare_exchange_strong(
+      expected, false, std::memory_order_relaxed);
+  assert(succeeded), (void)succeeded;
+}
+
+template <class K, class V, int C>
+void multiq<K, V, C>::print() const {
+  /* NOP */
 }

@@ -23,55 +23,50 @@
 #include "dist_lsm_local.h"
 #include "shared_lsm/shared_lsm.h"
 
-namespace kpq
-{
+namespace kpq {
 
 template <class K, class V, int Rlx>
-class dist_lsm
-{
-    friend int dist_lsm_local<K, V, Rlx>::spy(dist_lsm<K, V, Rlx> *parent);
+class dist_lsm {
+  friend int dist_lsm_local<K, V, Rlx>::spy(dist_lsm<K, V, Rlx> *parent);
 
-public:
+ public:
+  /**
+   * Inserts a new item into the local LSM.
+   */
+  void insert(const K &key);
+  void insert(const K &key, const V &val);
 
-    /**
-     * Inserts a new item into the local LSM.
-     */
-    void insert(const K &key);
-    void insert(const K &key,
-                const V &val);
+  /**
+   * A special version of insert for use by the k-lsm. Acts like a standard
+   * insert until the largest block exceeds the relaxation size limit, at which
+   * point the block is inserted into the shared lsm instead.
+   */
+  void insert(const K &key, const V &val, shared_lsm<K, V, Rlx> *slsm);
 
-    /**
-     * A special version of insert for use by the k-lsm. Acts like a standard
-     * insert until the largest block exceeds the relaxation size limit, at which
-     * point the block is inserted into the shared lsm instead.
-     */
-    void insert(const K &key,
-                const V &val,
-                shared_lsm<K, V, Rlx> *slsm);
+  /**
+   * Attempts to remove the locally (i.e. on the current thread) minimal item.
+   * If the local LSM is empty, we try to copy items from another active thread.
+   * In case the local LSM is still empty, false is returned.
+   * If a locally minimal element is successfully found and removed, true is
+   * returned.
+   */
+  bool delete_min(V &val);
+  bool delete_min(K &key, V &val);
+  void find_min(typename block<K, V>::peek_t &best);
 
-    /**
-     * Attempts to remove the locally (i.e. on the current thread) minimal item.
-     * If the local LSM is empty, we try to copy items from another active thread.
-     * In case the local LSM is still empty, false is returned.
-     * If a locally minimal element is successfully found and removed, true is returned.
-     */
-    bool delete_min(V &val);
-    bool delete_min(K &key, V &val);
-    void find_min(typename block<K, V>::peek_t &best);
+  int spy();
 
-    int spy();
+  void print();
 
-    void print();
+  void init_thread(const size_t) const {}
+  constexpr static bool supports_concurrency() { return true; }
 
-    void init_thread(const size_t) const { }
-    constexpr static bool supports_concurrency() { return true; }
-
-private:
-    thread_local_ptr<dist_lsm_local<K, V, Rlx>> m_local;
+ private:
+  thread_local_ptr<dist_lsm_local<K, V, Rlx>> m_local;
 };
 
 #include "dist_lsm_inl.h"
 
-}
+}  // namespace kpq
 
 #endif /* __DIST_LSM_H */

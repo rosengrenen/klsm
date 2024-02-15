@@ -19,38 +19,30 @@
 
 #include "skip_queue.h"
 
-namespace kpqbench
-{
+namespace kpqbench {
 
 template <class T>
-void
-skip_queue<T>::insert(const T &key,
-                      const T & /* Unused */)
-{
-    m_pq.insert(key);
+void skip_queue<T>::insert(const T &key, const T & /* Unused */) {
+  m_pq.insert(key);
 }
 
 template <class T>
-bool
-skip_queue<T>::delete_min(T &v)
-{
-    if (m_pq.empty()) {
-        return false;
-    }
+bool skip_queue<T>::delete_min(T &v) {
+  if (m_pq.empty()) {
+    return false;
+  }
 
-    v = m_pq.front();
-    m_pq.erase(m_pq.begin());
+  v = m_pq.front();
+  m_pq.erase(m_pq.begin());
 
-    return true;
+  return true;
 }
 
 template <class T>
-void
-skip_queue<T>::clear()
-{
-    m_pq.clear();
+void skip_queue<T>::clear() {
+  m_pq.clear();
 }
 
 template class skip_queue<uint32_t>;
 
-}
+}  // namespace kpqbench

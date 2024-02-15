@@ -24,70 +24,65 @@
 #include <cstdio>
 #include <cstring>
 
-#define V(D) \
-    D(inserts) \
-    D(successful_deletes) \
-    D(failed_deletes) \
-    D(slsm_inserts) /* Block inserts into shared lsm. */ \
-    D(slsm_insert_retries) /* Block insert retries through concurrent modification. */ \
-    D(slsm_deletes) \
-    D(dlsm_deletes) \
-    D(slsm_peek_cache_hit) /* Number of times the cached item is returned by the slsm. */ \
-    D(slsm_peeks_performed) /* Number of times we got past the cached item. */ \
-    D(slsm_peek_attempts) /* Number of actual block array peek() calls. */ \
-    D(block_shrinks) \
-    D(pivot_shrinks) \
-    D(pivot_grows) \
-    D(successful_peeks) \
-    D(failed_peeks) \
-    D(requested_spies) \
-    D(aborted_spies)
+#define V(D)                                                                   \
+  D(inserts)                                                                   \
+  D(successful_deletes)                                                        \
+  D(failed_deletes)                                                            \
+  D(slsm_inserts)        /* Block inserts into shared lsm. */                  \
+  D(slsm_insert_retries) /* Block insert retries through concurrent            \
+                            modification. */                                   \
+  D(slsm_deletes)                                                              \
+  D(dlsm_deletes)                                                              \
+  D(slsm_peek_cache_hit) /* Number of times the cached item is returned by the \
+                            slsm. */                                           \
+  D(slsm_peeks_performed) /* Number of times we got past the cached item. */   \
+  D(slsm_peek_attempts)   /* Number of actual block array peek() calls. */     \
+  D(block_shrinks)                                                             \
+  D(pivot_shrinks)                                                             \
+  D(pivot_grows)                                                               \
+  D(successful_peeks)                                                          \
+  D(failed_peeks)                                                              \
+  D(requested_spies)                                                           \
+  D(aborted_spies)
 
-namespace kpq
-{
+namespace kpq {
 
 /**
  * Very simple performance counters.
  */
 
-struct counters
-{
-    counters()
-    {
-        memset(this, 0, sizeof(*this));
-    }
+struct counters {
+  counters() { memset(this, 0, sizeof(*this)); }
 
-    counters &operator+=(const counters &that)
-    {
+  counters &operator+=(const counters &that) {
 #define D_OP_ADD(C) C += that.C;
-        V(D_OP_ADD)
+    V(D_OP_ADD)
 #undef D_OP_ADD
 
-        return *this;
-    }
+    return *this;
+  }
 
-    size_t operations() const {
-        return inserts + successful_deletes + failed_deletes;
-    }
+  size_t operations() const {
+    return inserts + successful_deletes + failed_deletes;
+  }
 
-    void print() const {
+  void print() const {
 #define D_PRINT_FORMAT(C) #C ": %lu\n"
 #define D_PRINT_ARGS(C) C,
-        printf(V(D_PRINT_FORMAT) "%s",
-               V(D_PRINT_ARGS) "");
+    printf(V(D_PRINT_FORMAT) "%s", V(D_PRINT_ARGS) "");
 #undef D_PRINT_ARGS
 #undef D_PRINT_FORMAT
-    }
+  }
 
 #define D_DECL(C) size_t C;
-    V(D_DECL)
+  V(D_DECL)
 #undef D_DECL
 
 #ifdef ENABLE_QUALITY
-    /** Two special-case members which are used to store thread-local sequences
-     *  of insertions and deletions for the quality benchmark. */
-    void *insertion_sequence;
-    void *deletion_sequence;
+  /** Two special-case members which are used to store thread-local sequences
+   *  of insertions and deletions for the quality benchmark. */
+  void *insertion_sequence;
+  void *deletion_sequence;
 #endif
 };
 
@@ -101,6 +96,6 @@ thread_local counters COUNTERS;
 #define COUNT_INC(C) kpq::COUNTERS.C++
 #endif
 
-}
+}  // namespace kpq
 
 #endif /* __COUNTERS_H */

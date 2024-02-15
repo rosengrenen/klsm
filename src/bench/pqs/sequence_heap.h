@@ -26,26 +26,24 @@
 template <class K, class V>
 class KNHeap;
 
-namespace kpqbench
-{
+namespace kpqbench {
 
 template <class T>
-class sequence_heap
-{
-public:
-    sequence_heap();
+class sequence_heap {
+ public:
+  sequence_heap();
 
-    void insert(const T &k, const T &v);
-    bool delete_min(T &v);
-    void clear();
+  void insert(const T &k, const T &v);
+  bool delete_min(T &v);
+  void clear();
 
-    void init_thread(const size_t) const { }
-    constexpr static bool supports_concurrency() { return false; }
+  void init_thread(const size_t) const {}
+  constexpr static bool supports_concurrency() { return false; }
 
-private:
-    KNHeap<T, T> *m_pq;
+ private:
+  KNHeap<T, T> *m_pq;
 };
 
-}
+}  // namespace kpqbench
 
 #endif /* __SEQUENCE_HEAP_H */

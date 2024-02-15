@@ -23,51 +23,48 @@
 #include <chrono>
 #include <cstddef>
 
-namespace kpq
-{
+namespace kpq {
 
 /**
  * Fast Marsaglia xorshf random number generator.
  */
 
-class xorshf96
-{
-public:
-    typedef uint64_t result_type;
-    static constexpr result_type min() { return std::numeric_limits<result_type>::min(); }
-    static constexpr result_type max() { return std::numeric_limits<result_type>::max(); }
+class xorshf96 {
+ public:
+  typedef uint64_t result_type;
+  static constexpr result_type min() {
+    return std::numeric_limits<result_type>::min();
+  }
+  static constexpr result_type max() {
+    return std::numeric_limits<result_type>::max();
+  }
 
-    xorshf96()
-    {
-        const auto d = std::chrono::high_resolution_clock::now().time_since_epoch();
-        x = std::chrono::duration_cast<std::chrono::nanoseconds>(d).count();
-    }
+  xorshf96() {
+    const auto d = std::chrono::high_resolution_clock::now().time_since_epoch();
+    x = std::chrono::duration_cast<std::chrono::nanoseconds>(d).count();
+  }
 
-    xorshf96(const uint64_t seed)
-    {
-        x = seed;
-    }
+  xorshf96(const uint64_t seed) { x = seed; }
 
-    uint64_t operator()()
-    {
-        x ^= x << 16;
-        x ^= x >> 5;
-        x ^= x << 1;
+  uint64_t operator()() {
+    x ^= x << 16;
+    x ^= x >> 5;
+    x ^= x << 1;
 
-        uint64_t t = x;
-        x = y;
-        y = z;
-        z = t ^ x ^ y;
+    uint64_t t = x;
+    x = y;
+    y = z;
+    z = t ^ x ^ y;
 
-        return z;
-    }
+    return z;
+  }
 
-private:
-    uint64_t x = 123456789;
-    uint64_t y = 362436069;
-    uint64_t z = 521288629;
+ private:
+  uint64_t x = 123456789;
+  uint64_t y = 362436069;
+  uint64_t z = 521288629;
 };
 
-}
+}  // namespace kpq
 
 #endif /* __XORSHF96_H */

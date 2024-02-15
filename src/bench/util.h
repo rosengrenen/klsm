@@ -20,33 +20,27 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
-#include <ctime>
 #include <cstdint>
+#include <ctime>
 #include <vector>
 
 class hwloc_wrapper_private;
 
-class hwloc_wrapper
-{
-public:
-    hwloc_wrapper();
-    virtual ~hwloc_wrapper();
+class hwloc_wrapper {
+ public:
+  hwloc_wrapper();
+  virtual ~hwloc_wrapper();
 
-    void pin_to_core(const int id);
+  void pin_to_core(const int id);
 
-private:
-    hwloc_wrapper_private *m_p;
+ private:
+  hwloc_wrapper_private *m_p;
 };
 
-double
-timediff_in_s(const struct timespec &start,
-              const struct timespec &end);
+double timediff_in_s(const struct timespec &start, const struct timespec &end);
 
-std::vector<uint32_t>
-random_array(const size_t n,
-             const int seed);
+std::vector<uint32_t> random_array(const size_t n, const int seed);
 
-uint64_t
-rdtsc();
+uint64_t rdtsc();
 
 #endif /* __UTIL_H */

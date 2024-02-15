@@ -37,22 +37,22 @@ constexpr static int DEFAULT_ALIGNMENT = 2048;
  */
 template <class K, class V, int Rlx, int Algn = DEFAULT_ALIGNMENT>
 class aligned_block_array {
-public:
-    aligned_block_array();
-    virtual ~aligned_block_array();
+ public:
+  aligned_block_array();
+  virtual ~aligned_block_array();
 
-    block_array<K, V, Rlx> *ptr() const { return m_ptr; }
+  block_array<K, V, Rlx> *ptr() const { return m_ptr; }
 
-private:
-    constexpr static size_t ARRAY_SIZE   = sizeof(block_array<K, V, Rlx>);
-    constexpr static size_t BUFFER_SIZE = Algn + ARRAY_SIZE;
+ private:
+  constexpr static size_t ARRAY_SIZE = sizeof(block_array<K, V, Rlx>);
+  constexpr static size_t BUFFER_SIZE = Algn + ARRAY_SIZE;
 
-    block_array<K, V, Rlx> *m_ptr;
-    uint8_t m_buffer[BUFFER_SIZE];
+  block_array<K, V, Rlx> *m_ptr;
+  uint8_t m_buffer[BUFFER_SIZE];
 };
 
 #include "aligned_block_array_inl.h"
 
-}
+}  // namespace kpq
 
 #endif /* __ALIGNED_BLOCK_ARRAY_H */

@@ -20,11 +20,11 @@
 #ifndef __SHARED_LSM_H
 #define __SHARED_LSM_H
 
-#include "util/mm.h"
-#include "util/thread_local_ptr.h"
 #include "block_array.h"
 #include "block_pool.h"
 #include "shared_lsm_local.h"
+#include "util/mm.h"
+#include "util/thread_local_ptr.h"
 #include "versioned_array_ptr.h"
 
 namespace kpq {
@@ -39,28 +39,27 @@ namespace kpq {
 
 template <class K, class V, int Rlx>
 class shared_lsm {
-public:
-    shared_lsm();
-    virtual ~shared_lsm() { }
+ public:
+  shared_lsm();
+  virtual ~shared_lsm() {}
 
-    void insert(const K &key);
-    void insert(const K &key,
-                const V &val);
-    void insert(block<K, V> *b);
+  void insert(const K &key);
+  void insert(const K &key, const V &val);
+  void insert(block<K, V> *b);
 
-    bool delete_min(V &val);
-    void find_min(typename block<K, V>::peek_t &best);
+  bool delete_min(V &val);
+  void find_min(typename block<K, V>::peek_t &best);
 
-    void init_thread(const size_t) const { }
-    constexpr static bool supports_concurrency() { return true; }
+  void init_thread(const size_t) const {}
+  constexpr static bool supports_concurrency() { return true; }
 
-private:
-    versioned_array_ptr<K, V, Rlx> m_global_array;
-    thread_local_ptr<shared_lsm_local<K, V, Rlx>> m_local_component;
+ private:
+  versioned_array_ptr<K, V, Rlx> m_global_array;
+  thread_local_ptr<shared_lsm_local<K, V, Rlx>> m_local_component;
 };
 
 #include "shared_lsm_inl.h"
 
-}
+}  // namespace kpq
 
 #endif /* __SHARED_LSM_H */

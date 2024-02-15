@@ -18,46 +18,33 @@
  */
 
 template <class K, class V, int Rlx>
-shared_lsm<K, V, Rlx>::shared_lsm()
-{
+shared_lsm<K, V, Rlx>::shared_lsm() {}
+
+template <class K, class V, int Rlx>
+void shared_lsm<K, V, Rlx>::insert(const K &key) {
+  insert(key, key);
 }
 
 template <class K, class V, int Rlx>
-void
-shared_lsm<K, V, Rlx>::insert(const K &key)
-{
-    insert(key, key);
+void shared_lsm<K, V, Rlx>::insert(const K &key, const V &val) {
+  auto local = m_local_component.get();
+  local->insert(key, val, m_global_array);
 }
 
 template <class K, class V, int Rlx>
-void
-shared_lsm<K, V, Rlx>::insert(const K &key,
-                              const V &val)
-{
-    auto local = m_local_component.get();
-    local->insert(key, val, m_global_array);
+void shared_lsm<K, V, Rlx>::insert(block<K, V> *b) {
+  auto local = m_local_component.get();
+  local->insert(b, m_global_array);
 }
 
 template <class K, class V, int Rlx>
-void
-shared_lsm<K, V, Rlx>::insert(block<K, V> *b)
-{
-    auto local = m_local_component.get();
-    local->insert(b, m_global_array);
+bool shared_lsm<K, V, Rlx>::delete_min(V &val) {
+  auto local = m_local_component.get();
+  return local->delete_min(val, m_global_array);
 }
 
 template <class K, class V, int Rlx>
-bool
-shared_lsm<K, V, Rlx>::delete_min(V &val)
-{
-    auto local = m_local_component.get();
-    return local->delete_min(val, m_global_array);
-}
-
-template <class K, class V, int Rlx>
-void
-shared_lsm<K, V, Rlx>::find_min(typename block<K, V>::peek_t &best)
-{
-    auto local = m_local_component.get();
-    local->peek(best, m_global_array);
+void shared_lsm<K, V, Rlx>::find_min(typename block<K, V>::peek_t &best) {
+  auto local = m_local_component.get();
+  local->peek(best, m_global_array);
 }

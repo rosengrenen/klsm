@@ -39,27 +39,26 @@ namespace kpq {
 
 template <class K, class V, int Rlx>
 class k_lsm {
-public:
-    k_lsm();
-    virtual ~k_lsm() { }
+ public:
+  k_lsm();
+  virtual ~k_lsm() {}
 
-    void insert(const K &key);
-    void insert(const K &key,
-                const V &val);
+  void insert(const K &key);
+  void insert(const K &key, const V &val);
 
-    bool delete_min(V &val);
-    bool delete_min(K &key, V &val);
+  bool delete_min(V &val);
+  bool delete_min(K &key, V &val);
 
-    void init_thread(const size_t) const { }
-    constexpr static bool supports_concurrency() { return true; }
+  void init_thread(const size_t) const {}
+  constexpr static bool supports_concurrency() { return true; }
 
-private:
-    dist_lsm<K, V, Rlx>   m_dist;
-    shared_lsm<K, V, Rlx> m_shared;
+ private:
+  dist_lsm<K, V, Rlx> m_dist;
+  shared_lsm<K, V, Rlx> m_shared;
 };
 
 #include "k_lsm_inl.h"
 
-}
+}  // namespace kpq
 
 #endif /* __K_LSM_H */

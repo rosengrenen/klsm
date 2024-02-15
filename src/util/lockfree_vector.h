@@ -23,75 +23,69 @@
 #include <atomic>
 #include <cassert>
 
-namespace kpq
-{
+namespace kpq {
 
 /** A lock-free vector of dynamic size, capable of holding up to 2^bucket_count
- *  elements. Allocated memory is freed only on destruction. The amount of memory
- *  used is determined by the highest n passed to get(). */
+ *  elements. Allocated memory is freed only on destruction. The amount of
+ * memory used is determined by the highest n passed to get(). */
 
 template <class T>
-class lockfree_vector
-{
-public:
-    static constexpr int bucket_count = 32;
+class lockfree_vector {
+ public:
+  static constexpr int bucket_count = 32;
 
-    lockfree_vector()
-    {
-        for (int i = 0; i < bucket_count; i++) {
-            m_buckets[i] = nullptr;
-        }
+  lockfree_vector() {
+    for (int i = 0; i < bucket_count; i++) {
+      m_buckets[i] = nullptr;
+    }
+  }
+
+  virtual ~lockfree_vector() {
+    for (int i = 0; i < bucket_count; i++) {
+      if (m_buckets[i] != nullptr) {
+        delete[] m_buckets[i];
+      }
+    }
+  }
+
+  T *get(const int n) {
+    const int i = index_of(n);
+
+    T *bucket = m_buckets[i].load(std::memory_order_relaxed);
+    if (bucket == nullptr) {
+      bucket = new T[1 << i];
+      T *expected = nullptr;
+      if (!m_buckets[i].compare_exchange_strong(expected, bucket)) {
+        delete[] bucket;
+        bucket = expected;
+        assert(bucket != nullptr);
+      }
     }
 
-    virtual ~lockfree_vector()
-    {
-        for (int i = 0; i < bucket_count; i++) {
-            if (m_buckets[i] != nullptr) {
-                delete[] m_buckets[i];
-            }
-        }
+    return &bucket[n + 1 - (1 << i)];
+  }
+
+ private:
+  static int index_of(const int n) {
+    /* We could optimize this for 64/32 bit ints. */
+
+    int i = n + 1;
+    int log = 0;
+
+    while (i > 1) {
+      i >>= 1;
+      log++;
     }
 
-    T *get(const int n)
-    {
-        const int i = index_of(n);
+    assert(log < bucket_count);
 
-        T *bucket = m_buckets[i].load(std::memory_order_relaxed);
-        if (bucket == nullptr) {
-            bucket = new T[1 << i];
-            T *expected = nullptr;
-            if (!m_buckets[i].compare_exchange_strong(expected, bucket)) {
-                delete[] bucket;
-                bucket = expected;
-                assert(bucket != nullptr);
-            }
-        }
+    return log;
+  }
 
-        return &bucket[n + 1 - (1 << i)];
-    }
-
-private:
-    static int index_of(const int n)
-    {
-        /* We could optimize this for 64/32 bit ints. */
-
-        int i = n + 1;
-        int log = 0;
-
-        while (i > 1) {
-            i >>= 1;
-            log++;
-        }
-
-        assert(log < bucket_count);
-
-        return log;
-    }
-
-private:
-    std::atomic<T *> m_buckets[bucket_count];
+ private:
+  std::atomic<T *> m_buckets[bucket_count];
 };
 
-}
+}  // namespace kpq
 
 #endif /* __LOCKFREE_VECTOR_H */

@@ -24,45 +24,42 @@
 #include <cstdint>
 #include <vector>
 
-namespace kpq
-{
+namespace kpq {
 
 template <class T>
 class LSMBlock;
 
 template <class T>
-class LSM
-{
-public:
-    LSM();
-    ~LSM();
+class LSM {
+ public:
+  LSM();
+  ~LSM();
 
-    void insert(const T &k, const T &v);
-    bool delete_min(T &v);
-    void clear();
+  void insert(const T &k, const T &v);
+  bool delete_min(T &v);
+  void clear();
 
-    void print() const;
+  void print() const;
 
-    void init_thread(const size_t) const { }
-    constexpr static bool supports_concurrency() { return false; }
+  void init_thread(const size_t) const {}
+  constexpr static bool supports_concurrency() { return false; }
 
-private:
-    /** Returns an unused block of size n == 2^i. */
-    LSMBlock<T> *unused_block(const int n);
-    void prune_last_block();
+ private:
+  /** Returns an unused block of size n == 2^i. */
+  LSMBlock<T> *unused_block(const int n);
+  void prune_last_block();
 
-    void insert_between(LSMBlock<T> *new_block,
-                        LSMBlock<T> *prev,
-                        LSMBlock<T> *next);
+  void insert_between(LSMBlock<T> *new_block, LSMBlock<T> *prev,
+                      LSMBlock<T> *next);
 
-private:
-    LSMBlock<T> *m_head; /**< The smallest block in the list. */
+ private:
+  LSMBlock<T> *m_head; /**< The smallest block in the list. */
 
-    /** A list of all allocated blocks. The two blocks of size 2^i
-     *  are stored in m_blocks[i]. */
-    std::vector<std::pair<LSMBlock<T> *, LSMBlock<T> *>> m_blocks;
+  /** A list of all allocated blocks. The two blocks of size 2^i
+   *  are stored in m_blocks[i]. */
+  std::vector<std::pair<LSMBlock<T> *, LSMBlock<T> *>> m_blocks;
 };
 
-}
+}  // namespace kpq
 
 #endif /* __LSM_H */
